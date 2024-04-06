@@ -1,18 +1,17 @@
 import jwt
 import os
 
+import OUR_exception
+
 
 class Decoder:
     pub_key = os.getenv("PUB_KEY")
 
-    class RefusedToken(Exception):
-        pass
-
-    class ExpiredToken(Exception):
-        pass
 
     @staticmethod
     def decode(to_decode):
+        if Decoder.pub_key == None:
+            raise OUR_exception.NoKey()
         try:
             token = jwt.decode(jwt=to_decode,
                                key=Decoder.pub_key,
@@ -21,7 +20,17 @@ class Decoder:
         except (jwt.DecodeError,
                 jwt.InvalidIssuerError,
                 jwt.InvalidSignatureError):
-            raise Decoder.RefusedToken()
+            raise OUR_exception.RefusedToken()
         except jwt.ExpiredSignatureError:
-            raise Decoder.ExpiredToken()
+            raise OUR_exception.ExpiredToken()
         return token
+
+
+class Encoder:
+    private_key = os.getenv("PRIV_KEY")
+
+    @staticmethod
+    def encode(to_encode):
+        if Encoder.private_key == None:
+            raise OUR_exception.NoKey()
+
