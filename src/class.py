@@ -3,6 +3,8 @@ import os
 
 import OUR_exception
 
+good_iss = "OUR_Transcendence"
+
 
 class Decoder:
     pub_key = os.getenv("PUB_KEY")
@@ -32,5 +34,16 @@ class Encoder:
     @staticmethod
     def encode(to_encode):
         if Encoder.private_key == None:
+    def encode(to_encode, type):
+        if type != "refresh" and type != "auth":
+            raise OUR_exception.BadSubject()
+        if Encoder.private_key is None:
             raise OUR_exception.NoKey()
-
+        if not isinstance(to_encode, dict):
+            raise TypeError("Payload not a dict")
+        to_encode["iss"] = good_iss
+        to_encode["sub"] = type
+        encoded = jwt.encode(payload=to_encode,
+                             key=Encoder.private_key,
+                             algorithm="RS256")
+        return encoded
