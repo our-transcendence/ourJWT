@@ -25,6 +25,6 @@ def auth_required(function, decoder: OUR_class.Decoder):
                 OUR_exception.RefusedToken,
                 OUR_exception.ExpiredToken):
             return HttpResponseUnauthorized(reason="Bad auth token")
-        return function(request, auth_decoded)
+        return function(request)
 
     return wrapper
