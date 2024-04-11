@@ -3,20 +3,28 @@ from django.http import HttpRequest, response
 
 import OUR_exception, OUR_class
 
-def auth_required(function):
-    def wrapper(request: HttpRequest, *args, **kwargs):
-        auth = request.COOKIES.get("auth_token", None)
+
+class HttpResponseUnauthorized(response.HttpResponse):
+    status_code = 401
+
+
+def auth_required(function, decoder: OUR_class.Decoder):
+    def wrapper(request: HttpRequest):
+        auth: str = request.headers["Authorization"]
         if auth is None:
-            return response.HttpResponse(status=412, reason="No auth token detected")
+            return response.HttpResponseBadRequest(reason="No Authorization header found in request")
+        auth_type = auth.split(" ")[0]
+        if (auth_type) != "Bearer":
+            return response.HttpResponseBadRequest(reason="Type not Bearer")
+        auth_token = auth.split(" ")[1]
+        if auth_token is None:
+            return response.HttpResponseBadRequest(reason="No auth token detected")
         try:
-            auth_decoded = OUR_class.Decoder.decode(auth)
-        except OUR_exception.NoKey:
-            print("NO PUBLIC KEY BIG ERROR") #TODO check with beroux to standardize thoose type of error
-        except (OUR_exception.BadSubject, OUR_exception.RefusedToken):
-            return response.HttpResponse(status=412, reason="Bad auth token")
-        except OUR_exception.ExpiredToken:
-            return response.HttpResponse(status=412, reason="Expired auth token") #TODO: generate new auth token directly from here
             auth_decoded = decoder.decode(auth_token)
-        return function(request)
+        except (OUR_exception.BadSubject,
+                OUR_exception.RefusedToken,
+                OUR_exception.ExpiredToken):
+            return HttpResponseUnauthorized(reason="Bad auth token")
+        return function(request, auth_decoded)
 
     return wrapper
