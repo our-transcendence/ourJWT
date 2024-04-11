@@ -16,6 +16,7 @@ def auth_required(function):
             return response.HttpResponse(status=412, reason="Bad auth token")
         except OUR_exception.ExpiredToken:
             return response.HttpResponse(status=412, reason="Expired auth token") #TODO: generate new auth token directly from here
+            auth_decoded = decoder.decode(auth_token)
         return function(request)
 
     return wrapper
