@@ -1,6 +1,6 @@
 import jwt
 
-import OUR_exception
+from . import OUR_exception
 
 good_iss = "OUR_Transcendence"
 
@@ -9,9 +9,9 @@ class Decoder:
     pub_key: str
 
     def __init__(self, pub_key):
+        if pub_key is None:
+             raise OUR_exception.NoKey
         self.pub_key = pub_key
-        if self.pub_key is None:
-            raise OUR_exception.NoKey
 
 
 
@@ -52,9 +52,9 @@ class Encoder:
     private_key: str
 
     def __init__(self, priv_key):
-        self.private_key = priv_key
-        if self.private_key is None:
+        if priv_key is None:
             raise OUR_exception.NoKey
+        self.private_key = priv_key
 
     def encode(self, to_encode, type):
         """
