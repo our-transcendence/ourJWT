@@ -1,4 +1,3 @@
-import jwt
 from django.http import HttpRequest, response
 
 import OUR_exception, OUR_class
