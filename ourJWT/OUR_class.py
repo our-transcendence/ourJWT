@@ -1,6 +1,7 @@
 import jwt
 
 from . import OUR_exception
+from django.http import HttpRequest, response
 
 good_iss = "OUR_Transcendence"
 
@@ -11,11 +12,11 @@ class Decoder:
     def __init__(self, pub_key):
         if pub_key is None:
              raise OUR_exception.NoKey
-        self.pub_key = pub_key
+        Decoder.pub_key = pub_key
 
 
-
-    def decode(self, to_decode):
+    @staticmethod
+    def decode(to_decode, check_date: bool=True):
         """
         decode the given JWT into a dict.
 
@@ -32,10 +33,11 @@ class Decoder:
         """
         try:
             token = jwt.decode(jwt=to_decode,
-                               key=self.pub_key,
-                               algorithms=["RS256"],
-                               issuer=good_iss)
-        except (jwt.DecodeError,
+                                key=Decoder.pub_key,
+                                algorithms=["RS256"],
+                                issuer=good_iss,
+                                options={"verify_exp": check_date})
+        except(jwt.DecodeError,
                 jwt.InvalidIssuerError,
                 jwt.InvalidSignatureError):
             raise OUR_exception.RefusedToken()
@@ -44,6 +46,22 @@ class Decoder:
         if token["sub"] != "auth" and token["sub"] != "refresh":
             raise OUR_exception.BadSubject
         return token
+
+    def check_auth():
+        def decorator(function):
+            def wrapper(request: HttpRequest):
+                auth: str = request.COOKIES.get("auth_token", None)
+                if auth is None:
+                    return response.HttpResponseBadRequest(reason="No auth cookie sent")
+                try:
+                    auth_decoded = Decoder.decode(auth)
+                except (OUR_exception.BadSubject,
+                        OUR_exception.RefusedToken,
+                        OUR_exception.ExpiredToken):
+                    return HttpResponseUnauthorized(reason="Bad auth token")
+                return function(request, token=auth_decoded)
+            return wrapper
+        return decorator
 
 
 
