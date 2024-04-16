@@ -10,17 +10,11 @@ class HttpResponseUnauthorized(response.HttpResponse):
 def auth_required(decoder: OUR_class.Decoder):
     def decorator(function):
         def wrapper(request: HttpRequest):
-            auth: str = request.headers["Authorization"]
+            auth: str = request.COOKIES.get("auth", None)
             if auth is None:
-                return response.HttpResponseBadRequest(reason="No Authorization header found in request")
-            auth_type = auth.split(" ")[0]
-            if (auth_type) != "Bearer":
-                return response.HttpResponseBadRequest(reason="Type not Bearer")
-            auth_token = auth.split(" ")[1]
-            if auth_token is None:
-                return response.HttpResponseBadRequest(reason="No auth token detected")
+                return response.HttpResponseBadRequest(reason="No auth cookie sent")
             try:
-                auth_decoded = decoder.decode(auth_token)
+                auth_decoded = decoder.decode(auth)
             except (OUR_exception.BadSubject,
                     OUR_exception.RefusedToken,
                     OUR_exception.ExpiredToken):
