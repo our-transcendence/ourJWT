@@ -73,13 +73,13 @@ class Encoder:
         """
         if type != "refresh" and type != "auth":
             raise OUR_exception.BadSubject()
-        if Encoder.private_key is None:
+        if self.private_key is None:
             raise OUR_exception.NoKey()
         if not isinstance(to_encode, dict):
             raise TypeError("Payload not a dict")
         to_encode["iss"] = good_iss
         to_encode["sub"] = type
         encoded = jwt.encode(payload=to_encode,
-                             key=Encoder.private_key,
+                             key=self.private_key,
                              algorithm="RS256")
         return encoded
