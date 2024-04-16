@@ -10,7 +10,7 @@ class HttpResponseUnauthorized(response.HttpResponse):
 def auth_required(decoder: OUR_class.Decoder):
     def decorator(function):
         def wrapper(request: HttpRequest):
-            auth: str = request.COOKIES.get("auth", None)
+            auth: str = request.COOKIES.get("auth_token", None)
             if auth is None:
                 return response.HttpResponseBadRequest(reason="No auth cookie sent")
             try:
@@ -19,6 +19,6 @@ def auth_required(decoder: OUR_class.Decoder):
                     OUR_exception.RefusedToken,
                     OUR_exception.ExpiredToken):
                 return HttpResponseUnauthorized(reason="Bad auth token")
-            return function(request, auth_decoded)
+            return function(request, token=auth_decoded)
         return wrapper
     return decorator

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     include_package_data=True,
     name='ourJWT',
-    version='0.0.5',
+    version='0.0.6',
     description='repackaging of pyJWT package, adding fonction required for our_transcendence',
     author="gd-harco",
     author_email="gd-harco@student.42lyon.fr",
