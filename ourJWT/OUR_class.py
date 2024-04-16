@@ -5,6 +5,8 @@ from django.http import HttpRequest, response
 
 good_iss = "OUR_Transcendence"
 
+class HttpResponseUnauthorized(response.HttpResponse):
+    status_code = 401
 
 class Decoder:
     pub_key: str
