@@ -51,7 +51,7 @@ class Decoder:
 
     def check_auth():
         def decorator(function):
-            def wrapper(request: HttpRequest):
+            def wrapper(request: HttpRequest, *args, **kwargs):
                 auth: str = request.COOKIES.get("auth_token", None)
                 if auth is None:
                     return response.HttpResponseBadRequest(reason="No auth cookie sent")
@@ -61,7 +61,7 @@ class Decoder:
                         OUR_exception.RefusedToken,
                         OUR_exception.ExpiredToken):
                     return HttpResponseUnauthorized(reason="Bad auth token")
-                return function(request, token=auth_decoded)
+                return function(request, *args, token=auth_decoded, **kwargs)
             return wrapper
         return decorator
 
